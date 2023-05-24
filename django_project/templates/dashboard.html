@@ -1,0 +1,24 @@
+{%extends 'base.html'%}
+
+{%block title%}Dashboard{%endblock%}
+
+{%block navbar%}
+{%include 'navbar.html'%}
+{%endblock%}
+
+{%block content%}
+<h1 class="text-center">Dashboard</h1>
+<div class="row mt-5">
+    {%for playlist in playlist_list%}
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title text-center">{{playlist.title}}</h5>
+                <p class="card-text text-center">{{playlist.created}}</p>
+                <a href="{%url 'detail_playlist' playlist.pk%}" class="card-link">Manage</a>
+            </div>
+        </div>
+    </div>
+    {%endfor%}
+</div>
+{%endblock%}

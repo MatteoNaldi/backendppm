@@ -1,0 +1,14 @@
+{%extends 'base.html'%}
+{% load crispy_forms_tags %}
+
+{%block title%}Rename Playlist{%endblock%}
+
+{%block content%}
+<h1 class="text-center">Rename Playlist</h1>
+<form action="" method="post" class="mt-3">
+    {% csrf_token %}
+    {{form|crispy}}
+    <button class="btn btn-primary" type="submit">Rename</button>
+</form>
+
+{%endblock%}

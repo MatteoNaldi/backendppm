@@ -1,0 +1,88 @@
+{%extends 'base.html'%}
+{% load crispy_forms_tags %}
+
+{%block title%} {{playlist.title}}{%endblock%}
+
+{%block navbar%}
+{%include 'navbar.html'%}
+{%endblock%}
+
+{%block content%}
+<div class="row">
+    <div class="col-md-3">
+
+    </div>
+    <div class="col-md-6">
+        <h1 class="text-center">{{playlist.title}}</h1>
+        <ul class="px-0 mt-3" style="list-style-type: none;">
+            {%for song_item in song_in_playlist%}
+            <li class="mb-3">
+                <div class="card py-2 px-2">
+                    <div class="row no-gutters">
+                        <div class="col-md-4">
+                            <img src="{{song_item.song.album_image.url}}" class="card-img"
+                                 style="width: 120px; height:120px"
+                                 alt="Album Image">
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card-body">
+                                <h3 class="card-title">{{song_item.song.title}}</h3>
+                                <h5 class="card-text">{{song_item.song.author}}</h5>
+                                <h6 class="card-text">{{song_item.song.album}}</h6>
+                            </div>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-center justify-content-center">
+                            <form action="{%url 'remove_song' song_item.pk%}" method="post">
+                                {% csrf_token %}
+                                <button class="btn btn-danger" type="submit">Remove</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            {%endfor%}
+        </ul>
+
+        <div class="row">
+            <div class="d-grid col-md-6">
+                <a href="{%url 'rename_playlist' playlist.pk%}" class="btn btn-primary" type="submit">Rename</a>
+            </div>
+            <div class="col-md-6">
+                <form class="d-grid" action="{%url 'remove_playlist' playlist.pk%}" method="post">
+                    {% csrf_token %}
+                    <button class="btn btn-danger" type="submit">Remove</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <h3 class="text-center">Add songs</h3>
+        <ul class="px-0 mt-3" style="list-style-type: none;">
+            {%for song in all_songs%}
+            <li class="mb-3">
+                <div class="card py-2 px-2">
+                    <div class="row no-gutters">
+                        <div class="col-md-10">
+                            <div class="card-body">
+                                <h3 class="card-title">{{song.title}}</h3>
+                                <h5 class="card-text">{{song.author}}</h5>
+                                <h6 class="card-text">{{song.album}}</h6>
+                            </div>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-center justify-content-center">
+                            <form action="{%url 'add_song' playlist.pk song.pk%}" method="post">
+                                {% csrf_token %}
+                                <button style="background-color:transparent; border-color:transparent" type="submit">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            {%endfor%}
+        </ul>
+    </div>
+</div>
+
+{%endblock%}

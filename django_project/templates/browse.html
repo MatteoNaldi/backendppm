@@ -1,0 +1,33 @@
+{%extends 'base.html'%}
+
+{%block title%}Browse{%endblock%}
+
+{%block navbar%}
+{%include 'navbar.html'%}
+{%endblock%}
+
+{%block content%}
+<h1 class="text-center">Browse</h1>
+
+<ul style="list-style-type: none;">
+    {%for song in song_list%}
+    <li class="mb-3">
+        <a href="{%url 'song' song.pk%}" style="text-decoration: none">
+            <div class="card py-2 px-2">
+                <div class="row no-gutters">
+                    <div class="col-md-1">
+                        <img src="{{song.album_image.url}}" class="card-img" style="width: 70px; height:70px"
+                             alt="Album Image">
+                    </div>
+                    <div class="col-md-11">
+                        <div class="card-body">
+                            <h3 class="card-title">{{song.title}}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </li>
+    {%endfor%}
+</ul>
+{%endblock%}
