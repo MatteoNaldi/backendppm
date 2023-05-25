@@ -7,13 +7,64 @@
 {%include 'navbar.html'%}
 {%endblock%}
 
+{% load filters%}
+
 {%block content%}
 <div class="row pb-5">
-    <div class="col-md-3">
-
+    <div class="col-md-3" style="height:100vh; overflow:auto">
+        <h3>Search Song</h3>
+        <form action="" method="get">
+            <input class="mb-2" name="search" type="text" placeholder="Search songs by name...">
+            <div class="d-flex align-items-center">
+                <button class="btn btn-primary me-1">Search</button>
+                <a href="{% url 'detail_playlist' playlist.pk%}" class="btn btn-secondary">Reset</a>
+            </div>
+        </form>
+        <h3>Filter By</h3>
+        <h6>Author</h6>
+        <form action="" method="get">
+            {% for author in all_songs|author_filter%}
+            <div>
+                <input id="{{author}}" name="author-filter" type="radio" value="{{author}}">
+                <label for="{{author}}">{{author}}</label>
+            </div>
+            {%endfor%}
+            <div class="d-flex align-items-center mt-2">
+                <button class="btn btn-primary me-1">Search</button>
+                <a href="{% url 'detail_playlist' playlist.pk%}" class="btn btn-secondary">Reset</a>
+            </div>
+        </form>
+        <h6>Album</h6>
+        <form action="" method="get">
+            {% for album in all_songs|album_filter%}
+            <div>
+                <input id="{{album}}" name="album-filter" type="radio" value="{{album}}">
+                <label for="{{album}}">{{album}}</label>
+            </div>
+            {%endfor%}
+            <div class="d-flex align-items-center mt-2">
+                <button class="btn btn-primary me-1">Search</button>
+                <a href="{% url 'detail_playlist' playlist.pk%}" class="btn btn-secondary">Reset</a>
+            </div>
+        </form>
+        <h6>Genre</h6>
+        <form action="" method="get">
+            {% for genre in all_songs|genre_filter%}
+            <div>
+                <input id="{{genre}}" name="genre-filter" type="radio" value="{{genre}}">
+                <label for="{{genre}}">{{genre}}</label>
+            </div>
+            {%endfor%}
+            <div class="d-flex align-items-center mt-2">
+                <button class="btn btn-primary me-1">Search</button>
+                <a href="{% url 'detail_playlist' playlist.pk%}" class="btn btn-secondary">Reset</a>
+            </div>
+        </form>
     </div>
-    <div class="col-md-6" style="border-left: 1px solid rgba(0,0,0,0.3); border-right: 1px solid rgba(0,0,0,0.3); height:100vh; overflow:auto">
-        <h1 class="text-center" style="position:sticky; top:0; z-index:10; background-color:white;">{{playlist.title}}</h1>
+    <div class="col-md-6"
+         style="border-left: 1px solid rgba(0,0,0,0.3); border-right: 1px solid rgba(0,0,0,0.3); height:100vh; overflow:auto">
+        <h1 class="text-center" style="position:sticky; top:0; z-index:10; background-color:white;">
+            {{playlist.title}}</h1>
         <ul class="px-0 mt-3" style="list-style-type: none;">
             {%for song_item in song_in_playlist%}
             <li class="mb-3">
@@ -24,14 +75,14 @@
                                  style="width: 120px; height:120px"
                                  alt="Album Image">
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-5">
                             <div class="card-body">
                                 <h3 class="card-title">{{song_item.song.title}}</h3>
                                 <h5 class="card-text">{{song_item.song.author}}</h5>
                                 <h6 class="card-text">{{song_item.song.album}}</h6>
                             </div>
                         </div>
-                        <div class="col-md-2 d-flex align-items-center justify-content-center">
+                        <div class="col-md-3 d-flex align-items-center justify-content-center">
                             <form action="{%url 'remove_song' song_item.pk%}" method="post">
                                 {% csrf_token %}
                                 <button class="btn btn-danger" type="submit">Remove</button>

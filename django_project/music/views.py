@@ -55,12 +55,50 @@ class DetailPlaylistView(PlaylistLoginRequired, DetailView):
         context = super().get_context_data(**kwargs)
         song_list = SongInPlaylist.objects.all().filter(playlist=self.get_object().pk)
         all_songs = Song.objects.all()
+        query = self.request.GET.get('search')
+        if query:
+            all_songs = all_songs.filter(title__icontains=query)
+        author_filter = self.request.GET.get('author-filter')
+        if author_filter:
+            all_songs = all_songs.filter(author__icontains=author_filter)
+        album_filter = self.request.GET.get('album-filter')
+        if album_filter:
+            all_songs = all_songs.filter(album__icontains=album_filter)
+        genre_filter = self.request.GET.get('genre-filter')
+        if genre_filter:
+            all_songs = all_songs.filter(genre__icontains=genre_filter)
         if song_list:
             all_songs = all_songs.exclude(pk__in=song_list.values('song_id'))
+
         context['song_in_playlist'] = song_list
         context['all_songs'] = all_songs
         return context
 
+class SharedPlaylistView(PlaylistLoginRequired, DetailView):
+    model = Playlist
+    template_name = "playlist/shared_playlist.html"
+    fields = ('title',)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        song_list = SongInPlaylist.objects.all().filter(playlist=self.get_object().pk)
+        context['song_in_playlist'] = song_list
+        return context
+
+class SavePlaylistView(PlaylistLoginRequired, UpdateView):
+    model = Playlist
+    fields = '__all__'
+
+    def post(self, request, *args, **kwargs):
+        playlist = Playlist.objects.all().filter(pk=self.kwargs['pk']).get()
+        my_playlist = Playlist(title = playlist.title, created=playlist.created, user=self.request.user)
+        my_playlist.save()
+
+        song_list=SongInPlaylist.objects.all().filter(playlist=playlist)
+        for song in song_list:
+            my_song_in_playlist = SongInPlaylist(playlist=my_playlist, song=song.song)
+            my_song_in_playlist.save()
+        return redirect('dashboard')
 
 class AddSongView(PlaylistLoginRequired, UpdateView):
     model = Playlist

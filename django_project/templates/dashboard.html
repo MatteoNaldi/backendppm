@@ -16,6 +16,7 @@
                 <h5 class="card-title text-center">{{playlist.title}}</h5>
                 <p class="card-text text-center">{{playlist.created}}</p>
                 <a href="{%url 'detail_playlist' playlist.pk%}" class="card-link">Manage</a>
+                <a href="#" onclick="navigator.clipboard.writeText('{{request.build_absolute_uri}}shared_playlist/{{playlist.pk}}'); this.textContent = 'Copied'" class="card-link">Share</a>
             </div>
         </div>
     </div>
