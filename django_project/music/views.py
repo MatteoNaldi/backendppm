@@ -114,7 +114,7 @@ class AddSongView(PlaylistLoginRequired, UpdateView):
         return redirect('detail_playlist', pk=playlist_pk)
 
 
-class RemovePlaylistView(PlaylistLoginRequired, DeleteView):
+class DeletePlaylistView(PlaylistLoginRequired, DeleteView):
     model = Playlist
     success_url = reverse_lazy('dashboard')
 

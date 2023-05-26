@@ -13,5 +13,5 @@ urlpatterns = [
     path("save_playlist/<int:pk>", SavePlaylistView.as_view(), name="save_playlist"),
     path("remove_song/<int:pk>", RemoveSongView.as_view(), name="remove_song"),
     path("add_song/<int:p_pk>/<int:s_pk>", AddSongView.as_view(), name="add_song"),
-    path("remove_playlist/<int:pk>", RemovePlaylistView.as_view(), name="remove_playlist"),
+    path("delete_playlist/<int:pk>", DeletePlaylistView.as_view(), name="delete_playlist"),
 ]
