@@ -27,7 +27,7 @@
                 {%csrf_token%}
 
                 <button style="background-color:transparent; border-color:transparent">
-                    {%if song.is_liked%}
+                    {%if is_liked%}
                     <i class="fas fa-heart" style="color:#a83f39"></i>
                     {%else%}
                     <i class="far fa-heart"></i>

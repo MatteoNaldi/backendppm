@@ -15,10 +15,30 @@
             <div class="card-body">
                 <h5 class="card-title text-center">{{playlist.title}}</h5>
                 <p class="card-text text-center">{{playlist.created}}</p>
-                <a href="{%url 'detail_playlist' playlist.pk%}" class="card-link">Manage</a>
-                <a href="#" onclick="navigator.clipboard.writeText('{{request.build_absolute_uri}}shared_playlist/{{playlist.pk}}'); this.textContent = 'Copied'" class="card-link">Share</a>
+                <div class="d-flex align-items-center justify-content-center">
+                    <a href="{%url 'detail_playlist' playlist.pk%}" class="card-link">Manage</a>
+                    <a href="#"
+                       onclick="navigator.clipboard.writeText('{{request.build_absolute_uri}}shared_playlist/{{playlist.pk}}'); this.textContent = 'Copied'"
+                       class="card-link">Share</a>
+                </div>
             </div>
         </div>
+    </div>
+    {%endfor%}
+</div>
+
+<h2 class="text-center mt-5">Recommendation</h2>
+<div class="row mt-3">
+    {%for song in recommended_list%}
+    <div class="col-md-3" style="width:25%;">
+        <a href="{% url 'song' song.pk%}" style="text-decoration:none">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title">{{song.song.title}}</h6>
+                    <p class="card-text">{{song.song.author}}</p>
+                </div>
+            </div>
+        </a>
     </div>
     {%endfor%}
 </div>

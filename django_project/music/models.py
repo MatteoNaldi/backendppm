@@ -13,7 +13,6 @@ class Song(models.Model):
     year = models.IntegerField(default=None)
     duration = models.CharField(max_length=7)
     album_image = models.ImageField(upload_to='albums/')
-    is_liked = models.BooleanField()
 
     def __str__(self):
         return f"{self.title} - {self.author}"
@@ -33,3 +32,10 @@ class SongInPlaylist(models.Model):
 
     def __str__(self):
         return f"{self.playlist.title}- {self.song.title}"
+
+class LikedSong(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    song = models.ForeignKey(Song, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.user}- {self.song.title}"

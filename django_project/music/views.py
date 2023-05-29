@@ -18,6 +18,36 @@ class DashboardView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return Playlist.objects.all().filter(user=self.request.user)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        my_liked_list = LikedSong.objects.all().filter(user=self.request.user).order_by('pk')
+        users = User.objects.all().exclude(id=self.request.user.id).order_by('pk')
+        selected_user = self.get_closer_user(users, my_liked_list)
+        recommended_list = LikedSong.objects.all().filter(user=selected_user).exclude(song_id__in=my_liked_list.values('song_id'))
+        context['recommended_list'] = recommended_list
+        return context
+
+    def get_closer_user(self, users_list, my_liked_songs_list):
+        fm = '0' + str(Song.objects.all().count()) + 'b'
+        my_vec_bin = format(int(self.gen_vec(my_liked_songs_list), 2), fm)
+        mx = 0
+        sel_user = None
+
+        for user in users_list:
+            user_liked_songs_list = LikedSong.objects.all().filter(user=user).order_by('pk')
+            vec_bin = format(int(self.gen_vec(user_liked_songs_list), 2), fm)
+            result = my_vec_bin and vec_bin
+            count = str(result).count('1')
+            if mx < count:
+                mx = count
+                sel_user = user
+        return sel_user
+
+    def gen_vec(self, vec):
+        all_song = Song.objects.all()
+        my_vec = "".join(["1" if song.id in list(vec.values_list('song', flat=True)) else "0" for song in all_song])
+        return my_vec
+
 
 class NewPlaylistView(LoginRequiredMixin, CreateView):
     model = Playlist
@@ -46,7 +76,7 @@ class RenamePlaylistView(PlaylistLoginRequired, UpdateView):
         return reverse_lazy('detail_playlist', kwargs={'pk': self.kwargs["pk"]})
 
 
-class DetailPlaylistView(PlaylistLoginRequired, DetailView):
+class DetailPlaylistView(PlaylistLoginRequired, UpdateView):
     model = Playlist
     template_name = "playlist/detail_playlist.html"
     fields = ('title',)
@@ -74,7 +104,15 @@ class DetailPlaylistView(PlaylistLoginRequired, DetailView):
         context['all_songs'] = all_songs
         return context
 
-class SharedPlaylistView(PlaylistLoginRequired, DetailView):
+    def post(self, request, *args, **kwargs):
+        playlist = self.get_object()
+        song = Song.objects.all().filter(pk=request.POST.get('song_id')).get()
+        song_in_playlist = SongInPlaylist(playlist=playlist, song=song)
+        song_in_playlist.save()
+        return super().post(request,args,kwargs)
+
+
+class SharedPlaylistView(PlaylistLoginRequired, UpdateView):
     model = Playlist
     template_name = "playlist/shared_playlist.html"
     fields = ('title',)
@@ -85,33 +123,16 @@ class SharedPlaylistView(PlaylistLoginRequired, DetailView):
         context['song_in_playlist'] = song_list
         return context
 
-class SavePlaylistView(PlaylistLoginRequired, UpdateView):
-    model = Playlist
-    fields = '__all__'
-
     def post(self, request, *args, **kwargs):
-        playlist = Playlist.objects.all().filter(pk=self.kwargs['pk']).get()
-        my_playlist = Playlist(title = playlist.title, created=playlist.created, user=self.request.user)
+        playlist = self.get_object()
+        my_playlist = Playlist(title=playlist.title, created=playlist.created, user=self.request.user)
         my_playlist.save()
 
-        song_list=SongInPlaylist.objects.all().filter(playlist=playlist)
+        song_list = SongInPlaylist.objects.all().filter(playlist=playlist)
         for song in song_list:
             my_song_in_playlist = SongInPlaylist(playlist=my_playlist, song=song.song)
             my_song_in_playlist.save()
         return redirect('dashboard')
-
-class AddSongView(PlaylistLoginRequired, UpdateView):
-    model = Playlist
-    fields = '__all__'
-
-    def post(self, request, *args, **kwargs):
-        playlist_pk = self.kwargs["p_pk"]
-        song_pk = self.kwargs["s_pk"]
-        playlist = Playlist.objects.all().filter(pk=playlist_pk).get()
-        song = Song.objects.all().filter(pk=song_pk).get()
-        song_in_playlist = SongInPlaylist(playlist = playlist, song=song)
-        song_in_playlist.save()
-        return redirect('detail_playlist', pk=playlist_pk)
 
 
 class DeletePlaylistView(PlaylistLoginRequired, DeleteView):
@@ -125,7 +146,7 @@ class RemoveSongView(PlaylistLoginRequired, DeleteView):
 
     def post(self, request, *args, **kwargs):
         self.playlist_pk = self.get_object().playlist.pk
-        return super().post(args, kwargs)
+        return super().post(request, args, kwargs)
 
     def get_success_url(self):
         return reverse_lazy('detail_playlist', kwargs={'pk': self.playlist_pk})
@@ -138,17 +159,32 @@ class BrowseView(LoginRequiredMixin, ListView):
     redirect_field_name = 'browse'
 
 
-class SongView(LoginRequiredMixin, UpdateView):
-    model = Song
+class SongView(LoginRequiredMixin, CreateView):
+    model = LikedSong
     template_name = "song.html"
-    fields = ('is_liked',)
+    fields = '__all__'
     login_url = 'login'
     redirect_field_name = 'song'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        song = Song.objects.all().filter(pk=self.kwargs["pk"]).get()
+        context['song'] = song
+        context['is_liked'] = self.is_liked(song)
+        return context
 
     def get_success_url(self):
         return reverse_lazy('song', kwargs={'pk': self.kwargs["pk"]})
 
-    def post(self, request, **kwargs):
-        request.POST = request.POST.copy()
-        request.POST['is_liked'] = not self.get_object().is_liked
-        return super().post(request, **kwargs)
+    def post(self, request, *args, **kwargs):
+        song = Song.objects.all().filter(pk=self.kwargs["pk"]).get()
+        if not self.is_liked(song):
+            liked_song = LikedSong(user=request.user, song=song)
+            liked_song.save()
+        else:
+            liked_song = LikedSong.objects.all().filter(user=self.request.user, song=song)
+            liked_song.delete()
+        return super().post(request, args, kwargs)
+
+    def is_liked(self, song):
+        return LikedSong.objects.all().filter(user=self.request.user, song=song).count() > 0

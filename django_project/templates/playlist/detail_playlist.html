@@ -118,8 +118,9 @@
                             </div>
                         </div>
                         <div class="col-md-2 d-flex align-items-center justify-content-center">
-                            <form action="{%url 'add_song' playlist.pk song.pk%}" method="post">
+                            <form action="" method="post">
                                 {% csrf_token %}
+                                <input type="number" name="song_id" value="{{song.pk}}" style="display:none;">
                                 <button style="background-color:transparent; border-color:transparent" type="submit">
                                     <i class="fas fa-plus"></i>
                                 </button>
