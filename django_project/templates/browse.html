@@ -6,28 +6,83 @@
 {%include 'navbar.html'%}
 {%endblock%}
 
+{% load filters%}
+
 {%block content%}
 <h1 class="text-center">Browse</h1>
-
-<ul style="list-style-type: none;">
-    {%for song in song_list%}
-    <li class="mb-3">
-        <a href="{%url 'song' song.pk%}" style="text-decoration: none">
-            <div class="card py-2 px-2">
-                <div class="row no-gutters">
-                    <div class="col-md-1">
-                        <img src="{{song.album_image.url}}" class="card-img" style="width: 70px; height:70px"
-                             alt="Album Image">
+<div class="row pb-5 justify-content-center">
+    <div class="col-md-3" style="border-right: 1px solid rgba(0,0,0,0.3);">
+        <h3>Search Song</h3>
+        <form class="mb-3" action="" method="get">
+            <input class="mb-2" name="search" type="text" placeholder="Search songs by name...">
+            <div class="d-flex align-items-center">
+                <button class="btn btn-primary me-1">Search</button>
+                <a href="{% url 'browse'%}" class="btn btn-secondary">Reset</a>
+            </div>
+        </form>
+        <h3>Filter By</h3>
+        <form action="" method="get">
+            <div style="height:250px; overflow:auto">
+                <div class="mb-3 border-bottom">
+                    <h6>Author</h6>
+                    {% for author in song_list|author_filter%}
+                    <div>
+                        <input id="{{author}}" name="author-filter" type="radio" value="{{author}}">
+                        <label for="{{author}}">{{author}}</label>
                     </div>
-                    <div class="col-md-11">
-                        <div class="card-body">
-                            <h3 class="card-title">{{song.title}}</h3>
-                        </div>
+                    {%endfor%}
+                </div>
+                <div class="mb-3 border-bottom">
+                    <h6>Album</h6>
+                    {% for album in song_list|album_filter%}
+                    <div>
+                        <input id="{{album}}" name="album-filter" type="radio" value="{{album}}">
+                        <label for="{{album}}">{{album}}</label>
                     </div>
+                    {%endfor%}
+                </div>
+                <div class="mb-3 border-bottom">
+                    <h6>Genre</h6>
+                    {% for genre in song_list|genre_filter%}
+                    <div>
+                        <input id="{{genre}}" name="genre-filter" type="radio" value="{{genre}}">
+                        <label for="{{genre}}">{{genre}}</label>
+                    </div>
+                    {%endfor%}
                 </div>
             </div>
-        </a>
-    </li>
-    {%endfor%}
-</ul>
+
+            <div class="d-flex align-items-center mt-2">
+                <button class="btn btn-primary me-1">Search</button>
+                <a href="{% url 'browse'%}" class="btn btn-secondary">Reset</a>
+            </div>
+        </form>
+    </div>
+    <div class="col-md-9" style="height:450px; overflow:auto">
+        <ul style="list-style-type: none;">
+            {%for song in song_list%}
+            <li class="mb-3">
+                <a href="{%url 'song' song.pk%}" style="text-decoration: none">
+                    <div class="card py-2 px-2">
+                        <div class="row no-gutters">
+                            <div class="col-md-4">
+                                <img src="{{song.album_image.url}}" class="card-img" style="width: 120px; height:120px"
+                                     alt="Album Image">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h3 class="card-title">{{song.title}}</h3>
+                                    <h5 class="card-text">{{song.author}}</h5>
+                                    <h6 class="card-text">{{song.album}}</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </li>
+            {%endfor%}
+        </ul>
+    </div>
+</div>
+
 {%endblock%}

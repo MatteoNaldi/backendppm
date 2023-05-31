@@ -7,59 +7,14 @@
 {%include 'navbar.html'%}
 {%endblock%}
 
-{% load filters%}
-
 {%block content%}
-<div class="row pb-5">
-    <div class="col-md-3" style="height:100vh; overflow:auto">
-        <h3>Search Song</h3>
-        <form action="" method="get">
-            <input class="mb-2" name="search" type="text" placeholder="Search songs by name...">
-            <div class="d-flex align-items-center">
-                <button class="btn btn-primary me-1">Search</button>
-                <a href="{% url 'detail_playlist' playlist.pk%}" class="btn btn-secondary">Reset</a>
-            </div>
-        </form>
-        <h3>Filter By</h3>
-        <form action="" method="get">
-            <div class="mb-3 border-bottom">
-                <h6>Author</h6>
-                {% for author in all_songs|author_filter%}
-                <div>
-                    <input id="{{author}}" name="author-filter" type="radio" value="{{author}}">
-                    <label for="{{author}}">{{author}}</label>
-                </div>
-                {%endfor%}
-            </div>
-            <div class="mb-3 border-bottom">
-                <h6>Album</h6>
-                {% for album in all_songs|album_filter%}
-                <div>
-                    <input id="{{album}}" name="album-filter" type="radio" value="{{album}}">
-                    <label for="{{album}}">{{album}}</label>
-                </div>
-                {%endfor%}
-            </div>
-            <div class="mb-3 border-bottom">
-                <h6>Genre</h6>
-                {% for genre in all_songs|genre_filter%}
-                <div>
-                    <input id="{{genre}}" name="genre-filter" type="radio" value="{{genre}}">
-                    <label for="{{genre}}">{{genre}}</label>
-                </div>
-                {%endfor%}
-            </div>
+<div class="mb-3">
+    <h1 class="text-center">{{playlist.title}}</h1>
+</div>
 
-            <div class="d-flex align-items-center mt-2">
-                <button class="btn btn-primary me-1">Search</button>
-                <a href="{% url 'detail_playlist' playlist.pk%}" class="btn btn-secondary">Reset</a>
-            </div>
-        </form>
-    </div>
-    <div class="col-md-6"
-         style="border-left: 1px solid rgba(0,0,0,0.3); border-right: 1px solid rgba(0,0,0,0.3); height:100vh; overflow:auto">
-        <h1 class="text-center" style="position:sticky; top:0; z-index:10; background-color:white;">
-            {{playlist.title}}</h1>
+<div class="row pb-5 justify-content-center">
+    <div class="col-md-9"
+         style="height:400px; overflow:auto; border-right: 1px solid rgba(0,0,0,0.3);">
         <ul class="px-0 mt-3" style="list-style-type: none;">
             {%for song_item in song_in_playlist%}
             <li class="mb-3">
@@ -88,24 +43,9 @@
             </li>
             {%endfor%}
         </ul>
-
-        <div class="row">
-            <div class="d-grid col-md-6">
-                <a href="{%url 'rename_playlist' playlist.pk%}" class="btn btn-primary" type="submit">Rename</a>
-            </div>
-            <div class="col-md-6">
-                <form class="d-grid" action="{%url 'delete_playlist' playlist.pk%}" method="post">
-                    {% csrf_token %}
-                    <button class="btn btn-danger" type="submit">Delete</button>
-                </form>
-            </div>
-            <div class="d-grid col-md-12 mt-2">
-                <a href="{%url 'dashboard'%}" class="btn btn-success" type="submit">Save</a>
-            </div>
-        </div>
     </div>
-    <div class="col-md-3" style="height:100vh; overflow:auto">
-        <h3 class="text-center" style="position:sticky; top:0; z-index:10; background-color:white;">Add songs</h3>
+    <div class="col-md-3" style="height:400px; overflow:auto;">
+        <h3 class="text-center">Add Song</h3>
         <ul class="px-0 mt-3" style="list-style-type: none;">
             {%for song in all_songs%}
             <li class="mb-3">
@@ -131,6 +71,28 @@
             </li>
             {%endfor%}
         </ul>
+    </div>
+</div>
+
+<div>
+    <div class="row mb-2 justify-content-center">
+        <div class="col-md-6">
+            <div class="row">
+                <div class="col-md-4">
+                    <a href="{%url 'dashboard'%}" class="btn btn-success" style="width:100%">Save</a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{%url 'rename_playlist' playlist.pk%}" class="btn btn-primary"
+                       style="width:100%">Rename</a>
+                </div>
+                <div class="col-md-4">
+                    <form class="d-grid" action="{%url 'delete_playlist' playlist.pk%}" method="post">
+                        {% csrf_token %}
+                        <button class="btn btn-danger" type="submit">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

@@ -1,29 +1,26 @@
 {%extends 'base.html'%}
 {% load crispy_forms_tags %}
 
-{%block title%} {{playlist.title}}{%endblock%}
+{%block title%}{{playlist.title}}{%endblock%}
 
 {%block navbar%}
 {%include 'navbar.html'%}
 {%endblock%}
 
-{% load filters%}
-
 {%block content%}
+<div class="mb-3">
+    <h1 class="text-center">{{playlist.title}} - {{playlist.user}}</h1>
+</div>
+
 <div class="row pb-5 justify-content-center">
-    <div class="col-md-6"
-         style="border-left: 1px solid rgba(0,0,0,0.3); border-right: 1px solid rgba(0,0,0,0.3); height:100vh; overflow:auto">
-        <h1 class="text-center" style="position:sticky; top:0; z-index:10; background-color:white;">
-            {{playlist.title}} - {{playlist.user}}</h1>
+    <div class="col-md-6" style="border-left: 1px solid rgba(0,0,0,0.3); border-right: 1px solid rgba(0,0,0,0.3); height:400px; overflow:auto">
         <ul class="px-0 mt-3" style="list-style-type: none;">
             {%for song_item in song_in_playlist%}
             <li class="mb-3">
                 <div class="card py-2 px-2">
                     <div class="row no-gutters">
                         <div class="col-md-4">
-                            <img src="{{song_item.song.album_image.url}}" class="card-img"
-                                 style="width: 120px; height:120px"
-                                 alt="Album Image">
+                            <img src="{{song_item.song.album_image.url}}" class="card-img" style="width: 120px; height:120px" alt="Album Image">
                         </div>
                         <div class="col-md-8">
                             <div class="card-body">
@@ -37,14 +34,16 @@
             </li>
             {%endfor%}
         </ul>
+    </div>
+</div>
 
-        <div class="row">
-            <div class="col-md-12">
-                <form class="d-grid" action="" method="post">
-                    {% csrf_token %}
-                    <button class="btn btn-primary" type="submit">Add To Your Dashboard</button>
-                </form>
-            </div>
+<div>
+    <div class="row mb-2 justify-content-center">
+        <div class="col-md-6">
+            <form class="d-grid" action="" method="post">
+                {% csrf_token %}
+                <button class="btn btn-primary" type="submit">Add To Your Dashboard</button>
+            </form>
         </div>
     </div>
 </div>
