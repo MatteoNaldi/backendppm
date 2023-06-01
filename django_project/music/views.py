@@ -1,4 +1,4 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView
@@ -15,8 +15,10 @@ class DashboardView(LoginRequiredMixin, ListView):
     login_url = 'login'
     redirect_field_name = 'dashboard'
 
+    title = "My Favourite"
+
     def get(self, request, *args, **kwargs):
-        Playlist.objects.get_or_create(title="My Favourite", user=request.user)
+        Playlist.objects.get_or_create(title=self.title, user=request.user)
         return super().get(request, args, kwargs)
 
     def get_queryset(self):
@@ -24,26 +26,22 @@ class DashboardView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        my_liked_list = SongInPlaylist.objects.all().filter(playlist__user=self.request.user,
-                                                            playlist__title='My Favourite').order_by('pk')
+        my_liked_list = self.get_playlist(self.request.user)
         users = User.objects.all().exclude(id=self.request.user.id).order_by('pk')
         selected_user = self.get_closer_user(users, my_liked_list)
-        recommended_list = SongInPlaylist.objects.all().filter(playlist__user=selected_user,
-                                                               playlist__title='My Favourite').exclude(
-            song_id__in=my_liked_list.values('song_id'))
+        recommended_list = self.get_playlist(selected_user).exclude(song_id__in=my_liked_list.values('song_id'))
         context['recommended_list'] = recommended_list
         return context
 
     def get_closer_user(self, users_list, my_liked_songs_list):
         fm = '0' + str(Song.objects.all().count()) + 'b'
-        my_vec_bin = format(int(self.gen_vec(my_liked_songs_list), 2), fm)
+        my_vec_bin = self.bin_vec(my_liked_songs_list, fm)
         mx = 0
         sel_user = None
 
         for user in users_list:
-            user_liked_songs_list = SongInPlaylist.objects.all().filter(playlist__user=user,
-                                                                        playlist__title='My Favourite').order_by('pk')
-            vec_bin = format(int(self.gen_vec(user_liked_songs_list), 2), fm)
+            user_liked_songs_list = self.get_playlist(user)
+            vec_bin = self.bin_vec(user_liked_songs_list, fm)
             result = my_vec_bin and vec_bin
             count = str(result).count('1')
             if mx < count:
@@ -51,10 +49,13 @@ class DashboardView(LoginRequiredMixin, ListView):
                 sel_user = user
         return sel_user
 
-    def gen_vec(self, vec):
-        all_song = Song.objects.all()
-        my_vec = "".join(["1" if song.id in list(vec.values_list('song', flat=True)) else "0" for song in all_song])
-        return my_vec
+    def bin_vec(self, vec, fm):
+        string_vec = "".join(
+            ["1" if song.id in list(vec.values_list('song', flat=True)) else "0" for song in Song.objects.all()])
+        return format(int(string_vec, 2), fm)
+
+    def get_playlist(self, user):
+        return SongInPlaylist.objects.all().filter(playlist__user=user, playlist__title=self.title).order_by('pk')
 
 
 class NewPlaylistView(LoginRequiredMixin, CreateView):
@@ -66,16 +67,24 @@ class NewPlaylistView(LoginRequiredMixin, CreateView):
     redirect_field_name = 'dashboard'
 
     def form_valid(self, form):
+        if form.instance.title == 'My Favourite':
+            form.add_error("title", "Invalid Title")
+            return super().form_invalid(form)
         form.instance.user = self.request.user
         return super().form_valid(form)
 
 
-class PlaylistLoginRequired(LoginRequiredMixin):
+class LoginRequired(LoginRequiredMixin):
     login_url = 'login'
     redirect_field_name = 'detail_playlist'
 
 
-class RenamePlaylistView(PlaylistLoginRequired, UpdateView):
+class PlaylistPassesTest(UserPassesTestMixin):
+    def test_func(self):
+        return self.get_object().title != "My Favourite"
+
+
+class RenamePlaylistView(LoginRequired, PlaylistPassesTest, UpdateView):
     model = Playlist
     template_name = "playlist/rename_playlist.html"
     fields = ('title',)
@@ -84,68 +93,82 @@ class RenamePlaylistView(PlaylistLoginRequired, UpdateView):
         return reverse_lazy('detail_playlist', kwargs={'pk': self.kwargs["pk"]})
 
 
-class DetailPlaylistView(PlaylistLoginRequired, UpdateView):
-    model = Playlist
+class DetailPlaylistView(LoginRequired, ListView):
+    model = Song
     template_name = "playlist/detail_playlist.html"
-    fields = ('title',)
+
+    def get_queryset(self):
+        return Song.objects.all().filter(songinplaylist__in=self.get_songs())
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        song_list = SongInPlaylist.objects.all().filter(playlist=self.get_object().pk)
         all_songs = Song.objects.all()
-        if song_list:
-            all_songs = all_songs.exclude(pk__in=song_list.values('song_id'))
-
-        context['song_in_playlist'] = song_list
+        all_songs = all_songs.exclude(songinplaylist__in=self.get_songs())
         context['all_songs'] = all_songs
+
+        playlist = Playlist.objects.all().filter(pk=self.kwargs['pk']).get()
+        context['playlist'] = playlist
         return context
 
     def post(self, request, *args, **kwargs):
-        playlist = self.get_object()
+        playlist = Playlist.objects.all().filter(pk=self.kwargs['pk']).get()
         song = Song.objects.all().filter(pk=request.POST.get('song_id')).get()
         song_in_playlist = SongInPlaylist(playlist=playlist, song=song)
         song_in_playlist.save()
-        return super().post(request, args, kwargs)
+        return redirect('detail_playlist', pk=self.kwargs['pk'])
+
+    def get_songs(self):
+        return SongInPlaylist.objects.all().filter(playlist__id=self.kwargs['pk'])
 
 
-class SharedPlaylistView(PlaylistLoginRequired, UpdateView):
-    model = Playlist
+class SharedPlaylistView(LoginRequired, UserPassesTestMixin, ListView):
+    model = Song
     template_name = "playlist/shared_playlist.html"
-    fields = ('title',)
+
+    def get_queryset(self):
+        return Song.objects.all().filter(songinplaylist__in=self.get_songs())
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        song_list = SongInPlaylist.objects.all().filter(playlist=self.get_object().pk)
-        context['song_in_playlist'] = song_list
+        playlist = self.get_playlist()
+        context['playlist'] = playlist
         return context
 
     def post(self, request, *args, **kwargs):
-        playlist = self.get_object()
+        playlist = self.get_playlist()
+
         my_playlist = Playlist(title=playlist.title, created=playlist.created, user=self.request.user)
         my_playlist.save()
 
-        song_list = SongInPlaylist.objects.all().filter(playlist=playlist)
+        song_list = self.get_queryset()
         for song in song_list:
-            my_song_in_playlist = SongInPlaylist(playlist=my_playlist, song=song.song)
+            my_song_in_playlist = SongInPlaylist(playlist=my_playlist, song=song)
             my_song_in_playlist.save()
         return redirect('dashboard')
 
+    def test_func(self):
+        return self.request.user != self.get_playlist().user
 
-class DeletePlaylistView(PlaylistLoginRequired, DeleteView):
+    def get_playlist(self):
+        return Playlist.objects.all().filter(pk=self.kwargs['pk']).get()
+
+    def get_songs(self):
+        return SongInPlaylist.objects.all().filter(playlist__id=self.kwargs['pk'])
+
+
+class DeletePlaylistView(LoginRequired, PlaylistPassesTest, DeleteView):
     model = Playlist
     success_url = reverse_lazy('dashboard')
 
 
-class RemoveSongView(PlaylistLoginRequired, DeleteView):
-    model = SongInPlaylist
-    playlist_pk = None
+class RemoveSongView(LoginRequired, DeleteView):
+    model = Song
 
     def post(self, request, *args, **kwargs):
-        self.playlist_pk = self.get_object().playlist.pk
-        return super().post(request, args, kwargs)
-
-    def get_success_url(self):
-        return reverse_lazy('detail_playlist', kwargs={'pk': self.playlist_pk})
+        song = SongInPlaylist.objects.all().filter(song__pk=self.kwargs['pk'])
+        playlist_pk = song.get().playlist.pk
+        song.delete()
+        return redirect('detail_playlist', pk=playlist_pk)
 
 
 class BrowseView(LoginRequiredMixin, ListView):
@@ -160,12 +183,15 @@ class BrowseView(LoginRequiredMixin, ListView):
         query = self.request.GET.get('search')
         if query:
             all_songs = all_songs.filter(title__icontains=query)
+
         author_filter = self.request.GET.get('author-filter')
         if author_filter:
             all_songs = all_songs.filter(author__icontains=author_filter)
+
         album_filter = self.request.GET.get('album-filter')
         if album_filter:
             all_songs = all_songs.filter(album__icontains=album_filter)
+
         genre_filter = self.request.GET.get('genre-filter')
         if genre_filter:
             all_songs = all_songs.filter(genre__icontains=genre_filter)

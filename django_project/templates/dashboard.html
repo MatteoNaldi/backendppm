@@ -19,9 +19,9 @@
                     {% if playlist.title != "My Favourite" %}
                     <div class="d-flex align-items-center justify-content-center">
                         <a id="share" href="#"
-                           onclick="shareToCopy(this, {{playlist.id}})"
+                           onclick="shareToCopy(this, {{playlist.pk}})"
                            class="share card-link">Share</a>
-                        <p class="copied" id="{{playlist.id}}" style="display:none;">Copied</p>
+                        <p class="copied" id="{{playlist.pk}}" style="display:none;">Copied</p>
                     </div>
                     {%endif%}
                 </div>
@@ -33,10 +33,11 @@
 
 <h2 class="text-center mt-5">Recommendation</h2>
 
-<div class="mt-3 d-flex" style="width:1000px; overflow-x:auto; white-space:nowrap; border-left: 1px solid rgba(0,0,0,0.3); border-right: 1px solid rgba(0,0,0,0.3);">
+<div class="mt-3 d-flex"
+     style="width:1000px; overflow-x:auto; white-space:nowrap; border-left: 1px solid rgba(0,0,0,0.3); border-right: 1px solid rgba(0,0,0,0.3);">
     {%for recommended_song in recommended_list%}
     <div class="mx-3" style="min-width:25%;">
-        <a href="{% url 'song' song.song.pk%}" style="text-decoration:none">
+        <a href="{% url 'song' recommended_song.song.pk%}" style="text-decoration:none">
             <div class="card">
                 <div class="card-body">
                     <h6 class="card-title">{{recommended_song.song.title}}</h6>
@@ -50,8 +51,7 @@
 
 <script>
     function shareToCopy(e, id){
-    console.log(e)
-        navigator.clipboard.writeText('{{request.build_absolute_uri}}shared_playlist/{{playlist.pk}}');
+        navigator.clipboard.writeText('{{request.build_absolute_uri}}shared_playlist/'+id);
         document.querySelectorAll('.copied').forEach(copied=>{
             copied.style.display='none';
             document.querySelectorAll('.share').forEach(share=>{
@@ -61,6 +61,8 @@
         e.style.display='none';
         document.getElementById(`${id}`).style.display='block';
     }
-
 </script>
 {%endblock%}
+
+{%load static%}
+{%block script%}<script src="{%static 'js/script.js'%}"></script>{%endblock%}
