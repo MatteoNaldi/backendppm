@@ -1,68 +1,37 @@
-{%extends 'base.html'%}
+{%extends 'basic/base.html'%}
 {% load crispy_forms_tags %}
 
-{%block title%} {{playlist.title}}{%endblock%}
+{%block title%}{{playlist.title}}{%endblock%}
 
 {%block navbar%}
-{%include 'navbar.html'%}
+{%include 'basic/navbar.html'%}
 {%endblock%}
 
 {%block content%}
-<div class="mb-3">
+<div class="mb-2">
     <h1 class="text-center">{{playlist.title}}</h1>
 </div>
 
 <div class="row pb-5 justify-content-center">
-    <div class="col-md-9" style="height:400px; overflow:auto; border-right: 1px solid rgba(0,0,0,0.3);">
-        <ul class="px-0 mt-3" style="list-style-type: none;">
-            {%for song in object_list%}
-            <li class="mb-3">
-                <div class="card py-2 px-2">
-                    <div class="row no-gutters">
-                        <div class="col-md-4">
-                            <img src="{{song.album_image.url}}" class="card-img"
-                                 style="width: 120px; height:120px"
-                                 alt="Album Image">
-                        </div>
-                        <div class="col-md-5">
-                            <div class="card-body">
-                                <h3 class="card-title">{{song.title}}</h3>
-                                <h5 class="card-text">{{song.author}}</h5>
-                                <h6 class="card-text">{{song.album}}</h6>
-                            </div>
-                        </div>
-                        <div class="col-md-3 d-flex align-items-center justify-content-center">
-                            <form action="{%url 'remove_song' song.pk%}" method="post">
-                                {% csrf_token %}
-                                <button class="btn btn-danger" type="submit">Remove</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </li>
-            {%endfor%}
-        </ul>
+    <div class="col-md-9 border-end border-secondary detail">
+        {%include 'basic/song_card_small.html' with has_control=True%}
     </div>
-    <div class="col-md-3" style="height:400px; overflow:auto; ">
+
+    <div class="col-md-3 detail">
         <h3 class="text-center">Add Song</h3>
-        <ul class="px-0 mt-3" style="list-style-type: none;">
+        <ul class="px-0 mt-3">
             {%for song in all_songs%}
             <li class="mb-3">
                 <div class="card px-2">
-                    <div class="row no-gutters">
-                        <div class="col-md-10">
-                            <div class="card-body">
-                                <h6 class="card-title">{{song.title}}</h6>
-                                <p class="card-text">{{song.author}}</p>
-                            </div>
+                    <div class="row">
+                        <div class="col-md-8">
+                            {%include 'basic/song_card_minimum.html' with song=song%}
                         </div>
-                        <div class="col-md-2 d-flex align-items-center justify-content-center">
+                        <div class="col-md-4 d-flex align-items-center justify-content-center">
                             <form action="" method="post">
                                 {% csrf_token %}
-                                <input type="number" name="song_id" value="{{song.pk}}" style="display:none;">
-                                <button style="background-color:transparent; border-color:transparent" type="submit">
-                                    <i class="fas fa-plus"></i>
-                                </button>
+                                <input type="number" name="song_id" value="{{song.pk}}">
+                                <button class="btn btn-primary" type="submit">Add</button>
                             </form>
                         </div>
                     </div>
@@ -73,32 +42,37 @@
     </div>
 </div>
 
-<div>
-    <div class="row mb-2 justify-content-center">
-        <div class="col-md-6">
-            <div class="row">
-                <script>console.log({{playlist}})</script>
-                {%if playlist.title != 'My Favourite'%}
-                <div class="col-md-4">
-                    <a href="{%url 'dashboard'%}" class="btn btn-success" style="width:100%">Save</a>
-                </div>
-                <div class="col-md-4">
-                    <a href="{%url 'rename_playlist' playlist.pk%}" class="btn btn-primary"
-                       style="width:100%">Rename</a>
-                </div>
-                <div class="col-md-4">
-                    <form class="d-grid" action="{%url 'delete_playlist' playlist.pk%}" method="post">
-                        {% csrf_token %}
-                        <button class="btn btn-danger" type="submit">Delete</button>
-                    </form>
-                </div>
-                {%else%}
-                <div class="col-md-12">
-                    <a href="{%url 'dashboard'%}" class="btn btn-success" style="width:100%">Save</a>
-                </div>
-                {%endif%}
+<div class="row mb-1 justify-content-center">
+    <div class="col-md-6">
+        <div class="row">
+            {%if playlist.title != 'My Favourite'%}
+            <div class="col-md-3">
+                <a href="{%url 'dashboard'%}" class="btn btn-success control">Save</a>
             </div>
+            <div class="col-md-3">
+                <a href="{%url 'rename_playlist' playlist.pk%}" class="btn btn-primary control">Rename</a>
+            </div>
+            <div class="col-md-3">
+                <a href="#" class="copied btn btn-secondary control"
+                   onclick="shareToCopy(this, '{{request.build_absolute_uri}}')">Share</a>
+            </div>
+            <div class="col-md-3">
+                <form action="{%url 'delete_playlist' playlist.pk%}" method="post">
+                    {% csrf_token %}
+                    <button class="btn btn-danger control" type="submit">Delete</button>
+                </form>
+            </div>
+            {%else%}
+            <div class="col-md-12">
+                <a href="{%url 'dashboard'%}" class="btn btn-success control">Save</a>
+            </div>
+            {%endif%}
         </div>
     </div>
 </div>
+{%endblock%}
+
+{%load static%}
+{%block script%}
+<script src="{%static 'js/script.js'%}"></script>
 {%endblock%}

@@ -1,0 +1,56 @@
+.banner{
+    width:100%
+}
+
+.song-album-image{
+    --dim:200px;
+    width:var(--dim);
+    height:var(--dim);
+}
+
+.filter{
+    height:250px;
+    overflow:auto;
+}
+
+.browse{
+    height:450px;
+    overflow:auto;
+}
+
+.detail{
+    height:400px;
+    overflow:auto;
+}
+
+ul{
+    list-style-type: none;
+}
+
+.clickable{
+    text-decoration: none;
+}
+
+.song-album-image-small{
+    --dim:120px;
+    width:var(--dim);
+    height:var(--dim);
+}
+
+.recommendation{
+    width:1000px;
+    overflow-x:auto;
+    white-space:nowrap;
+}
+
+.recommended-song{
+    min-width:20%;
+}
+
+.control{
+    width:100%;
+}
+
+input[type=number]{
+    display:none;
+}

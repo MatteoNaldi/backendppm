@@ -1,17 +1,17 @@
-{%extends 'base.html'%}
+{%extends 'basic/base.html'%}
 
 {%block title%}Browse{%endblock%}
 
 {%block navbar%}
-{%include 'navbar.html'%}
+{%include 'basic/navbar.html'%}
 {%endblock%}
 
 {% load filters%}
 
 {%block content%}
 <h1 class="text-center">Browse</h1>
-<div class="row pb-5 justify-content-center">
-    <div class="col-md-3" style="border-right: 1px solid rgba(0,0,0,0.3);">
+<div class="row">
+    <div class="col-md-3 border-end border-secondary">
         <h3>Search Song</h3>
         <form class="mb-3" action="" method="get">
             <input class="mb-2" name="search" type="text" placeholder="Search songs by name...">
@@ -22,7 +22,7 @@
         </form>
         <h3>Filter By</h3>
         <form action="" method="get">
-            <div style="height:250px; overflow:auto">
+            <div class="filter">
                 <div class="mb-3 border-bottom">
                     <h6>Author</h6>
                     {% for author in song_list|author_filter%}
@@ -58,16 +58,15 @@
             </div>
         </form>
     </div>
-    <div class="col-md-9" style="height:450px; overflow:auto">
-        <ul style="list-style-type: none;">
+    <div class="col-md-9 browse">
+        <ul>
             {%for song in song_list%}
             <li class="mb-3">
-                <a href="{%url 'song' song.pk%}" style="text-decoration: none">
+                <a class="clickable" href="{%url 'song' song.pk%}">
                     <div class="card py-2 px-2">
-                        <div class="row no-gutters">
+                        <div class="row">
                             <div class="col-md-4">
-                                <img src="{{song.album_image.url}}" class="card-img" style="width: 120px; height:120px"
-                                     alt="Album Image">
+                                <img src="{{song.album_image.url}}" class="card-img song-album-image-small" alt="Album Image">
                             </div>
                             <div class="col-md-8">
                                 <div class="card-body">

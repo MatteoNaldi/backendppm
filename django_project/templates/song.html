@@ -1,17 +1,17 @@
-{%extends 'base.html'%}
+{%extends 'basic/base.html'%}
 
 {%block title%}{{song.title}}{%endblock%}
 
 {%block navbar%}
-{%include 'navbar.html'%}
+{%include 'basic/navbar.html'%}
 {%endblock%}
 
 {%block content%}
 
 <div class="card py-2 px-2">
-    <div class="row no-gutters">
+    <div class="row">
         <div class="col-md-4">
-            <img src="{{song.album_image.url}}" class="card-img" style="width: 200px; height:200px" alt="Album Image">
+            <img src="{{song.album_image.url}}" class="card-img song-album-image" alt="Album Image">
         </div>
         <div class="col-md-8">
             <div class="card-body">
