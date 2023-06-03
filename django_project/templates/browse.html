@@ -62,22 +62,24 @@
         <ul>
             {%for song in song_list%}
             <li class="mb-3">
-                <a class="clickable" href="{%url 'song' song.pk%}">
-                    <div class="card py-2 px-2">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <img src="{{song.album_image.url}}" class="card-img song-album-image-small" alt="Album Image">
-                            </div>
-                            <div class="col-md-8">
-                                <div class="card-body">
-                                    <h3 class="card-title">{{song.title}}</h3>
-                                    <h5 class="card-text">{{song.author}}</h5>
-                                    <h6 class="card-text">{{song.album}}</h6>
-                                </div>
+
+                <div class="card py-2 px-2">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <img src="{{song.album_image.url}}" class="card-img song-album-image-small"
+                                 alt="Album Image">
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card-body">
+                                <h3 class="card-title">{{song.title}}</h3>
+                                <h5 class="card-text">{{song.author}}</h5>
+                                <h6 class="card-text">{{song.album}}</h6>
+                                <a class="card-link" href="{%url 'song' song.pk%}">See details</a>
                             </div>
                         </div>
                     </div>
-                </a>
+                </div>
+
             </li>
             {%endfor%}
         </ul>

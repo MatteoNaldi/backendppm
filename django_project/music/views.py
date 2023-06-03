@@ -165,7 +165,7 @@ class RemoveSongView(LoginRequired, DeleteView):
     model = Song
 
     def post(self, request, *args, **kwargs):
-        song = SongInPlaylist.objects.all().filter(song__pk=self.kwargs['pk'])
+        song = SongInPlaylist.objects.all().filter(playlist__user=request.user, song__pk=self.kwargs['pk'])
         playlist_pk = song.get().playlist.pk
         song.delete()
         return redirect('detail_playlist', pk=playlist_pk)

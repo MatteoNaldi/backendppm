@@ -1,4 +1,5 @@
 <div class="card-body">
     <h6 class="card-title">{{song.title}}</h6>
     <p class="card-text">{{song.author}}</p>
+    <a class="card-link" href="{% url 'song' song.pk%}">See details</a>
 </div>
