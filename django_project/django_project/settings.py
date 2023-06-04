@@ -25,9 +25,9 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY","")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = DEBUG = os.environ.get("DJANGO_DEBUG", "") != "False"
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "backendppm-production.up.railway.app"]
 
-CSRF_TRUSTED_ORIGINS = ['https://']
+CSRF_TRUSTED_ORIGINS = ['https://backendppm-production.up.railway.app']
 
 # Application definition
 
